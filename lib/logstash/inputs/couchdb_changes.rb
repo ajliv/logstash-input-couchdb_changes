@@ -222,14 +222,14 @@ class LogStash::Inputs::CouchDBChanges < LogStash::Inputs::Base
     end
     hash = Hash.new
     hash['@metadata'] = { '_id' => data['doc']['_id'] }
+    hash['doc'] = data['doc']
+    hash['doc'].delete('_id') unless @keep_id
+    hash['doc'].delete('_rev') unless @keep_revision
     if data['doc']['_deleted']
       hash['@metadata']['action'] = 'delete'
     else
-      hash['doc'] = data['doc']
       hash['@metadata']['action'] = 'update'
-      hash['doc'].delete('_id') unless @keep_id
       hash['doc_as_upsert'] = true
-      hash['doc'].delete('_rev') unless @keep_revision
     end
     hash['@metadata']['seq'] = data['seq']
     event = LogStash::Event.new(hash)
